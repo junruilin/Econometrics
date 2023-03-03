@@ -1,0 +1,98 @@
+\documentclass[11pt]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage{geometry}
+\geometry{verbose}
+\setlength{\parskip}{1pt}
+\setlength{\parindent}{2pt}
+\usepackage{color}
+\usepackage{booktabs}
+\usepackage{adjustbox}
+\usepackage{dcolumn}
+\usepackage{amsmath, amssymb}
+\usepackage[authoryear]{natbib}
+\usepackage[unicode=true,
+ bookmarks=false,
+ breaklinks=false,pdfborder={0 0 1},backref=section,colorlinks=false]
+ {hyperref}
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+\newcommand{\lyxmathsym}[1]{\ifmmode\begingroup\def\b@ld{bold}
+  \text{\ifx\math@version\b@ld\bfseries\fi#1}\endgroup\else#1\fi}
+\newcommand{\R}{\mathbb{R}}
+
+
+%% Because html converters don't know tabularnewline
+\providecommand{\tabularnewline}{\\}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{url}
+\usepackage{array}
+\usepackage{enumitem}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\title{\Huge Gary Chamberlain (1984)}
+\author{\Large Junrui Lin}
+\date{\Large 2023 Jan}
+
+\makeatother
+
+\begin{document}
+
+\title{EM Algorithm}
+\maketitle
+\begin{center}
+\begin{tabular*}{0.9\textwidth}{@{\extracolsep{\fill}}@{\extracolsep{\fill}}l@{\extracolsep{\fill}}l@{\extracolsep{\fill}}l}
+Method of Optimization & $\qquad$ & Junrui Lin\tabularnewline
+2023 Jan &  & Email: \href{jl12680@nyu.edu}{jl12680@nyu.edu}\tabularnewline
+\end{tabular*}
+\par\end{center}
+
+
+\section{Setup}
+In finite mixtures model, we assume there is K types of heterogeneity (group heterogeneity).
+$$F(y|x)=\sum_{k=1}^K\pi_k(x)F_k(y|x)$$
+Where $\pi_k$ is the mixing probabilities, and $F_k(y|x)$ are the mixture component. When we do MLE, we choose $\theta$ to maximize the log-likelihood
+$$\log F(y|\theta,\pi)=\sum_{i=1}^N\log\bigg(\sum_{k=1}^K\pi_kF_k(y_{i1},...,y_{iT}|\theta)\bigg)$$
+But the objective function is hard to maximize by FOC, we use EM algorithm.
+\section{Computation}
+Pretends that we know $\pi$ and $\theta$, and iterate until $\pi^{(t)},\theta^{(t)}$ converge. Initial guess $\pi^{(0)},\theta^{(0)}$
+Define
+$$P\bigg(Z_i=k|\{y_{it}\}_{t=1}^T,\theta^{(0)},\pi^{(0)}\bigg)=\frac{\pi_k^{(0)}F_k\bigg(\{y_{it}\}_{t=1}^T,\theta^{(0)}\bigg)}{\sum_{j=1}^K\pi_j^{(0)}F_j\bigg(\{y_{it}\}_{t=1}^T,\theta^{(0)}\bigg)}$$
+Expectation
+$$Q(\theta,\pi|\theta^{(0)},\pi^{(0)}):=\sum_{i=1}^N\sum_{k=1}^KP\bigg(Z_i=k|\{y_{it}\}_{t=1}^T,\theta^{(0)},\pi^{(0)}\bigg)\log\bigg[\pi_kF_k\bigg(\{y_{it}\}_{t=1}^T,\theta\bigg)\bigg]$$
+Maximization
+$$(\theta^{(1)},\pi^{(1)})=\arg\max_{\theta,\pi}Q(\theta,\pi|\theta^{(0)},\pi^{(0)})$$
+Repeat the process until converge.
+\section{Proof of Convergence}
+$$\log F(y_i|\theta,\pi)=\log F(y_i,z_i|\theta,\pi)-\log F(z_i|y_i,\theta,\pi)$$
+\begin{align*}
+	\log F(y_i|\theta,\pi)=&\sum_{k=1}^KP(z_i=k|y_i,\theta^{(t)},\pi^{(t)})
+	\log F(y_i,z_i=k|\theta,\pi)-\\
+	&\sum_{k=1}^KP(z_i=k|y_i,\theta^{(t)},\pi^{(t)})
+	\log P(z_i=k|y_i,\theta,\pi)\\
+	\log F(y_i|\theta,\pi)-\log F(y_i|\theta^{(t)},\pi^{(t)})=&\sum_{k=1}^KP(z_i=k|y_i,\theta^{(t)},\pi^{(t)})
+	\log P(z_i=k|y_i,\theta,\pi)-\\
+	&\sum_{k=1}^KP(z_i=k|y_i,\theta^{(t)},\pi^{(t)})
+	\log P(z_i=k|y_i,\theta^{(t)},\pi^{(t)})+\\
+	&\sum_{k=1}^KP(z_i=k|y_i,\theta^{(t)},\pi^{(t)})
+	\log P(z_i=k|y_i,\theta^{(t)},\pi^{(t)})-\\
+	&\sum_{k=1}^KP(z_i=k|y_i,\theta^{(t)},\pi^{(t)})
+	\log P(z_i=k|y_i,\theta,\pi)
+\end{align*}
+Then use the inequality: $\forall p,q\in\triangle_K\Rightarrow -\sum_{l=1}^K p_l\log p_l\leq-\sum_{l=1}^K p_l\log q_l$
+$$\sum_{k=1}^KP(z_i=k|y_i,\theta^{(t)},\pi^{(t)})
+	\log P(z_i=k|y_i,\theta,\pi)-
+	\sum_{k=1}^KP(z_i=k|y_i,\theta^{(t)},\pi^{(t)})
+	\log P(z_i=k|y_i,\theta^{(t)},\pi^{(t)})\leq 0$$
+$$\sum_{k=1}^KP(z_i=k|y_i,\theta^{(t)},\pi^{(t)})
+	\log P(z_i=k|y_i,\theta^{(t)},\pi^{(t)})-\sum_{k=1}^KP(z_i=k|y_i,\theta^{(t)},\pi^{(t)})
+	\log P(z_i=k|y_i,\theta,\pi)\geq0$$
+
+$$\log F(y_i|\theta,\pi)-\log F(y_i|\theta^{(t)},\pi^{(t)})\geq Q(\theta,\pi|\theta^{(t)},\pi^{(t)})-Q(\theta^{(t)},\pi^{(t)}|\theta^{(t)},\pi^{(t)})$$
+\end{document}
