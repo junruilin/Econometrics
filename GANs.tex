@@ -1,0 +1,105 @@
+\documentclass[11pt]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage{geometry}
+\geometry{verbose}
+\setlength{\parskip}{1pt}
+\setlength{\parindent}{2pt}
+\usepackage{color}
+\usepackage{booktabs}
+\usepackage{adjustbox}
+\usepackage{dcolumn}
+\usepackage{amsmath, amssymb}
+\usepackage[authoryear]{natbib}
+\usepackage[unicode=true,
+ bookmarks=false,
+ breaklinks=false,pdfborder={0 0 1},backref=section,colorlinks=false]
+ {hyperref}
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+\newcommand{\lyxmathsym}[1]{\ifmmode\begingroup\def\b@ld{bold}
+  \text{\ifx\math@version\b@ld\bfseries\fi#1}\endgroup\else#1\fi}
+\newcommand{\R}{\mathbb{R}}
+
+
+%% Because html converters don't know tabularnewline
+\providecommand{\tabularnewline}{\\}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{url}
+\usepackage{array}
+\usepackage{enumitem}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\title{\Huge Gary Chamberlain (1984)}
+\author{\Large Junrui Lin}
+\date{\Large 2023 Mar}
+
+\makeatother
+
+\begin{document}
+
+\title{GANs}
+\maketitle
+\begin{center}
+\begin{tabular*}{0.9\textwidth}{@{\extracolsep{\fill}}@{\extracolsep{\fill}}l@{\extracolsep{\fill}}l@{\extracolsep{\fill}}l}
+Method of Optimization & $\qquad$ & Junrui Lin\tabularnewline
+2023 Mar &  & Email: \href{jl12680@nyu.edu}{jl12680@nyu.edu}\tabularnewline
+\end{tabular*}
+\par\end{center}
+
+
+\section{Setup}
+We have a structural model $h$ associate with parameter $\theta$, where we believe the data is generated through this model. Suppose we observe the sample$$X_i=h(y_i,x_i)$$
+And base on our model, we can generate our synthetic sample
+$$X_i^{\theta} = h(y_i^\theta,x_i)$$
+We have a family of discriminative models $D\in \mathcal{D}$
+$$D:X_i\rightarrow [\varepsilon,1-\varepsilon ]$$
+Where $D(X_i)=P$($X_i$ is drawn from sample), $1-D(X_i)=P$($X_i$ is synthetic)
+
+The estimator $\hat\theta$ is the solution of 
+$$\min_\theta \bigg\{\max_{D\in\mathcal{D}}\frac{1}{N}\sum_{i=1}^N\log D(X_i)+\frac{1}{H}\sum_{j=1}^H\log [1-D(X_j^{\theta})]\bigg\}$$ 
+\section{Example}
+\subsection{Logit Discriminator}
+The discriminator $$D(X_i)=\log(\frac{1}{1+e^{X_i'\beta}})=P(X_i \text{ is drawn from sample})$$
+
+
+$$\hat\theta = \arg\min_\theta\bigg\{ \max_\beta\frac{1}{N}\sum_{i=1}^N\log(\frac{1}{1+e^{X_i'\beta}})+\frac{1}{H}\sum_{i=1}^H\log(\frac{e^{(X_i^\theta)'\beta}}{1+e^{(X_i^\theta)'\beta}})\bigg\}$$
+Suppose the data generating process is linear
+$$y_i = x_i'\theta+\varepsilon_i,\ \varepsilon_i\sim N(0,1),\ X_i = (y_i,x_iy_i,x_i),\ X_i^\theta =(y_i^\theta,x_iy_i^\theta,x_i)$$
+\textbf{Step 0:} Draw the random part of the model, in this case draw $\{\varepsilon_i^0\}_{i=1}^N$ i.i.d. from $N(0,1)$, here the simulation sample size is equal to the true sample size
+
+\textbf{Loop Start:}
+
+\textbf{Step 1:} First give inital guess $\theta^0$, generate synthetic data by
+$$y_i^{\theta^0}=x_i'\theta^0+\varepsilon^0_i,\ X_i^{\theta^0} = (y_i^{\theta^0},x_iy_i^{\theta^0},x_i)$$
+\textbf{Step 2:} Training the discriminator, get $\beta^0$ by 
+$$\beta^0 = \arg\max_\beta \bigg\{\frac{1}{N}\sum_{i=1}^N\log(\frac{1}{1+e^{X_i'\beta}})+\frac{1}{N}\sum_{i=1}^N\log(\frac{e^{(X_i^{\theta^0})'\beta}}{1+e^{(X_i^{\theta^0})'\beta}})\bigg\}$$
+\textbf{Step 3:} Updating the data generating parameter $\theta^1$ by 1-step gradient descent
+\begin{align*}
+	L(\theta^0,\beta^0)&= \bigg\{\frac{1}{N}\sum_{i=1}^N\log(\frac{1}{1+e^{X_i'\beta^0}})+\frac{1}{N}\sum_{i=1}^N\log(\frac{e^{(X_i^{\theta^0})'\beta^0}}{1+e^{(X_i^{\theta^0})'\beta^0}})\bigg\}
+\end{align*}
+Notice that $\beta$ is associate with $\theta$, so we need to compute the derivative numerically. Little perturbation of $\theta$ won't affect $\beta$, because of Step 2 and Envelop Theorem.
+
+We want to compute $\nabla_{\theta^0} L(\theta^0,\beta^0)$ using 
+
+$$\nabla_{\theta^0} L(\theta^0,\beta^0)=\frac{L(\theta^0+h,\beta^0)-L(\theta^0-h,\beta^0)}{2h}$$
+
+\textit{Note: Here when compute $L(\theta^0+h,\beta^0),\ L(\theta^0-h,\beta^0)$, we need to go back to Step 1 to get new $X_i$}
+
+Updating $\theta_1$ by 
+$$\theta^1 = \theta^0+\gamma \nabla_{\theta^0} L(\theta^0,\beta^0)$$
+Where the step size $\gamma$ is choosen by us, but $\gamma$ is usually small.
+
+\textbf{Step 4:} Iteration, go back to Step 1, $\theta^0=\theta^1$...
+\bigskip
+
+\textbf{Loop End:} If the model is correctly specified, the parameters will converge. In this case $\beta^t\to 0$, $D(X) = 0.5$
+
+
+\end{document}

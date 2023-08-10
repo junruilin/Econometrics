@@ -1,0 +1,126 @@
+\documentclass[11pt]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage{geometry}
+\geometry{verbose}
+\setlength{\parskip}{1pt}
+\setlength{\parindent}{2pt}
+\usepackage{color}
+\usepackage{booktabs}
+\usepackage{adjustbox}
+\usepackage{dcolumn}
+\usepackage{tikz,forest}
+\usetikzlibrary{arrows.meta}
+
+\forestset{
+    .style={
+        for tree={
+            base=bottom,
+            child anchor=north,
+            align=center,
+            s sep+=1cm,
+    straight edge/.style={
+        edge path={\noexpand\path[\forestoption{edge},thick,-{Latex}] 
+        (!u.parent anchor) -- (.child anchor);}
+    },
+    if n children={0}
+        {tier=word, draw, thick, rectangle}
+        {draw, diamond, thick, aspect=2},
+    if n=1{%
+        edge path={\noexpand\path[\forestoption{edge},thick,-{Latex}] 
+        (!u.parent anchor) -| (.child anchor) node[pos=.2, above] {Y};}
+        }{
+        edge path={\noexpand\path[\forestoption{edge},thick,-{Latex}] 
+        (!u.parent anchor) -| (.child anchor) node[pos=.2, above] {N};}
+        }
+        }
+    }
+}
+
+
+\usepackage{amsmath, amssymb}
+\usepackage[authoryear]{natbib}
+\usepackage[unicode=true,
+ bookmarks=false,
+ breaklinks=false,pdfborder={0 0 1},backref=section,colorlinks=false]
+ {hyperref}
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+\newcommand{\lyxmathsym}[1]{\ifmmode\begingroup\def\b@ld{bold}
+  \text{\ifx\math@version\b@ld\bfseries\fi#1}\endgroup\else#1\fi}
+\newcommand{\R}{\mathbb{R}}
+
+
+%% Because html converters don't know tabularnewline
+\providecommand{\tabularnewline}{\\}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{url}
+\usepackage{array}
+\usepackage{enumitem}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\author{\Large Junrui Lin}
+\date{\Large 2023 Mar}
+
+\makeatother
+
+\begin{document}
+
+\title{Classification Tree}
+\maketitle
+\begin{center}
+\begin{tabular*}{0.9\textwidth}{@{\extracolsep{\fill}}@{\extracolsep{\fill}}l@{\extracolsep{\fill}}l@{\extracolsep{\fill}}l}
+Machine Learning & $\qquad$ & Junrui Lin\tabularnewline
+2023 Mar &  & Email: \href{jl12680@nyu.edu}{jl12680@nyu.edu}\tabularnewline
+\end{tabular*}
+\par\end{center}
+
+
+\section{Decision Trees}
+For given dataset, we observe the characteristics of each individual and their type. How do we use the characteristics to classify their types? For example, we have the dataset on yogurt, the data looks like this
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+Yogurt ID & Quality  & Price & Type  \\ \hline
+1         & 8      & 3     & Prime \\ \hline
+2         & 10      & 1.5   & Basic \\ \hline
+3         & 5       & 1.2   & Basic \\ \hline
+4         & 2       & 4     & Prime \\ \hline
+5         & 3       & 1.2   & Basic \\ \hline
+6         & 8        & 1     & Basic \\ \hline
+\end{tabular}
+\end{table} 
+The tree looks like 
+
+ \tikzset{
+    decision/.style={diamond, minimum height=10pt, minimum width=20pt, inner sep=1pt},
+    chance/.style={circle, minimum width=20pt, draw=blue, fill=none, thick, inner sep=0pt},
+  }
+\centering
+\begin{forest}
+  label L/.style={
+    edge label={node[midway,left,font=\scriptsize]{#1}}
+  },
+  label R/.style={
+    edge label={node[midway,right,font=\scriptsize]{#1}}
+  },
+  for tree={
+    child anchor=north,
+    for descendants={
+      {edge=->}
+    }
+  },
+  [Price, rectangle, draw
+    [Prime, rectangle, draw, label L=$\geq2$]
+    [Basic, rectangle, draw, label R=$<2$ ]
+   ]
+\end{forest}
+\end{document}
